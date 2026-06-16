@@ -3,14 +3,31 @@ interface Props {
 	title: string;
 	description: string;
 	image: string;
+	alt: string;
+	category: string;
+	aspectRatio?: string;
 }
 
-const { title, description, image } = Astro.props;
+const { title, description, image, alt, category, aspectRatio = "aspect-[3/4]" } = Astro.props;
 ---
-<div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-	<img src={image} alt={title} class="w-full h-48 object-cover" />
-	<div class="p-6">
-		<h3 class="text-xl font-semibold mb-2">{title}</h3>
-		<p class="text-gray-600">{description}</p>
+<button 
+	type="button" 
+	class="gallery-item group block relative w-full text-left overflow-hidden rounded-2xl bg-gray-900 shadow-xl transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-white/5 focus:outline-none focus:ring-2 focus:ring-white/50"
+	data-category={category}
+	data-image={image}
+>
+	<div class={aspectRatio + " w-full overflow-hidden"}>
+		<img 
+			src={image} 
+			alt={alt} 
+			class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-90 group-hover:opacity-100" 
+			loading="lazy"
+		/>
 	</div>
-</div>
+	<div class="absolute inset-0 bg-gradient-to-t from-dark/90 via-dark/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500"></div>
+	
+	<div class="absolute bottom-0 left-0 p-6 w-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+		<h3 class="text-xl font-serif text-white mb-1 tracking-wide">{title}</h3>
+		<p class="text-xs text-gray-300 font-light tracking-wider uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">{description}</p>
+	</div>
+</button>

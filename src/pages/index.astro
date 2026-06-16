@@ -1,11 +1,34 @@
 ﻿---
 import Layout from '../layouts/Layout.astro';
+import heroImg from '../assets/urban/night-skyline--tokyo_36977302436_l.jpg';
 ---
 
 <Layout title="Inicio">
-	<section class="py-16 text-center">
-		<h1 class="text-5xl font-extrabold mb-6">Capturando momentos, creando historias</h1>
-		<p class="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">Bienvenido a mi portfolio. Explora mi trabajo fotográfico y descubre el mundo a través de mi lente.</p>
-		<a href="/dmg-photography/proyectos" class="bg-gray-900 text-white px-8 py-3 rounded-md hover:bg-gray-800 transition-colors inline-block font-medium">Ver Proyectos</a>
+	<section class="relative h-screen flex items-center justify-center overflow-hidden">
+		<!-- Background Image -->
+		<div class="absolute inset-0 z-0">
+			<img src={heroImg.src} alt="Tokyo Night Skyline" class="w-full h-full object-cover object-center scale-105 animate-[pulse_30s_ease-in-out_infinite_alternate] opacity-60" />
+			<div class="absolute inset-0 bg-gradient-to-b from-dark/30 via-dark/50 to-dark"></div>
+		</div>
+
+		<!-- Content -->
+		<div class="relative z-10 text-center px-4 max-w-4xl mx-auto mt-16">
+			<h1 class="text-5xl md:text-7xl lg:text-8xl font-serif text-white mb-6 tracking-tight leading-tight opacity-0 animate-[fadeInUp_1s_ease-out_forwards]">
+				Capturing the<br/><span class="italic text-gray-300">Unseen</span>
+			</h1>
+			<p class="text-sm md:text-base text-gray-400 uppercase tracking-[0.3em] mb-12 opacity-0 animate-[fadeInUp_1s_ease-out_0.3s_forwards] font-light">
+				DMG Photography Portfolio
+			</p>
+			<a href="/dmg-photography/proyectos" class="opacity-0 animate-[fadeInUp_1s_ease-out_0.6s_forwards] inline-block border border-white/20 text-white px-8 py-3 text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-dark transition-all duration-500">
+				Explorar Galería
+			</a>
+		</div>
 	</section>
 </Layout>
+
+<style>
+	@keyframes fadeInUp {
+		from { opacity: 0; transform: translateY(20px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+</style>
