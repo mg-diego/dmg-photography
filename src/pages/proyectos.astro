@@ -1,0 +1,13 @@
+﻿---
+import Layout from '../layouts/Layout.astro';
+import Card from '../components/Card.astro';
+---
+
+<Layout title="Proyectos">
+	<h1 class="text-4xl font-bold mb-8">Mis Proyectos</h1>
+	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+		<Card title="Naturaleza" description="Explorando paisajes y vida silvestre." image="https://images.unsplash.com/photo-1444464666168-49b628f80479?auto=format&fit=crop&w=600&q=80" />
+		<Card title="Retratos" description="La esencia de las personas." image="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=600&q=80" />
+		<Card title="Urbano" description="La vida en la ciudad, calles y arquitectura." image="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&w=600&q=80" />
+	</div>
+</Layout>

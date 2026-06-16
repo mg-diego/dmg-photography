@@ -1,0 +1,21 @@
+{
+  "name": "dmg-photography",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/tailwind": "^6.0.2",
+    "astro": "^4.0.0",
+    "tailwindcss": "^3.4.19"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.5.0",
+    "typescript": "^5.0.0"
+  }
+}
