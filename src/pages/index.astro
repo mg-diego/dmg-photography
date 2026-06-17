@@ -13,11 +13,13 @@ const imageList = Object.keys(images).map(path => {
 	if (path.includes('/music/')) category = 'musica';
 	else if (path.includes('/urban/')) category = 'urbano';
 	else if (path.includes('/nature/')) category = 'naturaleza';
-	return { src, category };
+	
+	const filename = path.split('/').pop() || '';
+	return { src, category, filename };
 });
 
 // Seleccionamos imágenes para el grid
-const galleryImages = imageList.slice(0, 36);
+const galleryImages = imageList;
 ---
 
 <Layout title="Inicio">
@@ -64,7 +66,13 @@ const galleryImages = imageList.slice(0, 36);
 				{galleryImages.map((img, index) => {
 					const ratios = ["aspect-[3/4]", "aspect-[4/5]", "aspect-[2/3]", "aspect-square"];
 					const ratio = ratios[index % ratios.length];
-					const title = 'Captura #' + (index + 1);
+					
+					const nameWithoutExt = img.filename.replace(/\.[^/.]+$/, "");
+					const parts = nameWithoutExt.split('--');
+					const title = parts[0] ? parts[0].replace(/-/g, ' ') : 'Captura';
+					const subTitle = parts.length > 1 ? parts[1].split('_')[0].replace(/-/g, ' ') : '';
+					
+					const altTitle = subTitle ? `${title} - ${subTitle}` : title;
 					
 					const catLabel = img.category === 'musica' ? 'Música' : 
 									 img.category === 'urbano' ? 'Urbano' : 
@@ -74,15 +82,23 @@ const galleryImages = imageList.slice(0, 36);
 						<div class="break-inside-avoid gallery-wrapper">
 							<Card 
 								title={title}
+								subTitle={subTitle}
 								description={catLabel}
 								image={img.src}
-								alt={title}
+								alt={altTitle}
 								category={img.category}
 								aspectRatio={ratio}
 							/>
 						</div>
 					);
 				})}
+			</div>
+
+			<!-- Load More -->
+			<div class="mt-16 text-center">
+				<button id="load-more-btn" class="border border-white/20 text-white px-8 py-3 text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-dark transition-all duration-500 hidden">
+					Ver Más
+				</button>
 			</div>
 		</div>
 	</section>
@@ -111,8 +127,26 @@ const galleryImages = imageList.slice(0, 36);
 		to { opacity: 1; transform: translateY(0); }
 	}
 	
+	@keyframes slideInNext {
+		from { opacity: 0; transform: scale(0.98) translateX(20px); }
+		to { opacity: 1; transform: scale(1) translateX(0); }
+	}
+	
+	@keyframes slideInPrev {
+		from { opacity: 0; transform: scale(0.98) translateX(-20px); }
+		to { opacity: 1; transform: scale(1) translateX(0); }
+	}
+	
 	.gallery-wrapper {
 		transition: opacity 0.5s ease, transform 0.5s ease;
+	}
+
+	.slide-next {
+		animation: slideInNext 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+	}
+	
+	.slide-prev {
+		animation: slideInPrev 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 	}
 </style>
 
@@ -130,6 +164,10 @@ const galleryImages = imageList.slice(0, 36);
 
 		let visibleImages: string[] = [];
 		let currentImageIndex = -1;
+		let currentFilter = 'all';
+		let currentPage = 1;
+		const itemsPerPage = 12;
+		const loadMoreBtn = document.getElementById('load-more-btn');
 
 		const updateVisibleImages = () => {
 			visibleImages = [];
@@ -143,6 +181,66 @@ const galleryImages = imageList.slice(0, 36);
 			});
 		};
 
+		const applyFilterAndPagination = (animate = true) => {
+			let matchCount = 0;
+			let visibleCount = 0;
+			const maxVisible = currentPage * itemsPerPage;
+
+			galleryWrappers.forEach((wrapper) => {
+				if (!(wrapper instanceof HTMLElement)) return;
+				const item = wrapper.querySelector('.gallery-item');
+				if (!item) return;
+				
+				const category = item.getAttribute('data-category');
+				const matchesFilter = currentFilter === 'all' || currentFilter === category;
+				
+				if (matchesFilter) {
+					matchCount++;
+					if (visibleCount < maxVisible) {
+						visibleCount++;
+						if (wrapper.style.display === 'none' || !wrapper.style.display) {
+							wrapper.style.display = 'block';
+							if (animate) {
+								wrapper.style.opacity = '0';
+								wrapper.style.transform = 'scale(0.95)';
+								setTimeout(() => {
+									wrapper.style.opacity = '1';
+									wrapper.style.transform = 'scale(1)';
+								}, 50);
+							} else {
+								wrapper.style.opacity = '1';
+								wrapper.style.transform = 'scale(1)';
+							}
+						}
+					} else {
+						wrapper.style.opacity = '0';
+						wrapper.style.transform = 'scale(0.95)';
+						setTimeout(() => {
+							wrapper.style.display = 'none';
+						}, animate ? 500 : 0);
+					}
+				} else {
+					wrapper.style.opacity = '0';
+					wrapper.style.transform = 'scale(0.95)';
+					setTimeout(() => {
+						wrapper.style.display = 'none';
+					}, animate ? 500 : 0);
+				}
+			});
+
+			setTimeout(() => {
+				updateVisibleImages();
+			}, animate ? 550 : 50);
+
+			if (loadMoreBtn) {
+				if (matchCount > maxVisible) {
+					loadMoreBtn.classList.remove('hidden');
+				} else {
+					loadMoreBtn.classList.add('hidden');
+				}
+			}
+		};
+
 		// --- Lógica de Filtrado ---
 		filterBtns.forEach(btn => {
 			btn.addEventListener('click', () => {
@@ -153,51 +251,40 @@ const galleryImages = imageList.slice(0, 36);
 				btn.classList.remove('border-transparent', 'text-gray-500');
 				btn.classList.add('border-white', 'text-white');
 
-				const filter = btn.getAttribute('data-filter');
-
-				galleryWrappers.forEach(wrapper => {
-					if (!(wrapper instanceof HTMLElement)) return;
-					const item = wrapper.querySelector('.gallery-item');
-					if (!item) return;
-					
-					const category = item.getAttribute('data-category');
-					
-					if (filter === 'all' || filter === category) {
-						wrapper.style.display = 'block';
-						setTimeout(() => {
-							wrapper.style.opacity = '1';
-							wrapper.style.transform = 'scale(1)';
-						}, 50);
-					} else {
-						wrapper.style.opacity = '0';
-						wrapper.style.transform = 'scale(0.95)';
-						setTimeout(() => {
-							wrapper.style.display = 'none';
-							updateVisibleImages(); // Update after animation
-						}, 500);
-					}
-				});
-				
-				if (filter === 'all') {
-					setTimeout(updateVisibleImages, 100);
-				}
+				currentFilter = btn.getAttribute('data-filter') || 'all';
+				currentPage = 1; // Reset pagination
+				applyFilterAndPagination();
 			});
 		});
 
+		if (loadMoreBtn) {
+			loadMoreBtn.addEventListener('click', () => {
+				currentPage++;
+				applyFilterAndPagination();
+			});
+		}
+
 		// Initial update
-		updateVisibleImages();
+		applyFilterAndPagination(false);
 
 		// --- Lógica del Lightbox ---
-		const showImage = (index: number) => {
+		const showImage = (index: number, direction: 'next' | 'prev' | 'none' = 'none') => {
 			if (!lightboxImg || !lightbox || !(lightboxImg instanceof HTMLImageElement)) return;
 			if (visibleImages.length === 0) return;
 			
 			currentImageIndex = (index + visibleImages.length) % visibleImages.length;
+			
+			if (direction !== 'none') {
+				lightboxImg.classList.remove('slide-next', 'slide-prev');
+				void lightboxImg.offsetWidth;
+				lightboxImg.classList.add(direction === 'next' ? 'slide-next' : 'slide-prev');
+			}
+			
 			lightboxImg.src = visibleImages[currentImageIndex];
 		};
 
-		const nextImage = () => showImage(currentImageIndex + 1);
-		const prevImage = () => showImage(currentImageIndex - 1);
+		const nextImage = () => showImage(currentImageIndex + 1, 'next');
+		const prevImage = () => showImage(currentImageIndex - 1, 'prev');
 
 		const openLightbox = (src: string) => {
 			if (!lightboxImg || !lightbox || !(lightboxImg instanceof HTMLImageElement)) return;
@@ -207,6 +294,7 @@ const galleryImages = imageList.slice(0, 36);
 			
 			if (currentImageIndex === -1) currentImageIndex = 0;
 
+			lightboxImg.classList.remove('slide-next', 'slide-prev');
 			lightboxImg.src = src;
 			lightbox.classList.remove('opacity-0', 'pointer-events-none');
 			lightbox.classList.add('opacity-100', 'pointer-events-auto');
